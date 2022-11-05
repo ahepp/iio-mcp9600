@@ -1,6 +1,19 @@
 obj-m += mcp9600.o
 
+ARCH ?= $(SUBARCH)
+CROSS_COMPILE ?=
+KVER  ?= $(if $(KERNELRELEASE),$(KERNELRELEASE),$(shell uname -r))
+KSRC ?= $(if $(KERNEL_SRC),$(KERNEL_SRC),/lib/modules/$(KVER)/build)
+MODDESTDIR := /lib/modules/$(KVER)/kernel/drivers/iio/temperature/
+INSTALL_PREFIX :=
+
 all:
-	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
+	$(MAKE) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) -C $(KSRC) M=$(shell pwd) modules
+
+modules_install:
+	$(MAKE) -C $(KSRC) M=$(shell pwd) modules_install
+
+.PHONY: clean
+
 clean:
-	make -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
+	$(MAKE) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) -C $(KSRC) M=$(shell pwd) clean
