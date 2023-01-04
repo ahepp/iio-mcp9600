@@ -64,7 +64,7 @@ struct mcp9600_data {
 static int mcp9600_read(struct mcp9600_data *data,
 			struct iio_chan_spec const *chan, int *val)
 {
-	__be16 buf = 0;
+	__be16 buf;
 	int ret;
 
 	ret = i2c_smbus_read_i2c_block_data(data->client, chan->address, 2,
@@ -109,8 +109,7 @@ static const struct iio_info mcp9600_info = {
 	.read_raw = mcp9600_read_raw,
 };
 
-static int mcp9600_probe(struct i2c_client *client,
-			 const struct i2c_device_id *id)
+static int mcp9600_probe(struct i2c_client *client)
 {
 	struct iio_dev *indio_dev;
 	struct mcp9600_data *data;
@@ -150,12 +149,12 @@ static int mcp9600_remove(struct i2c_client *client)
 	return 0;
 }
 
-static const struct i2c_device_id mcp9600_id[] = { { "mcp9600", 0 }, {} };
+static const struct i2c_device_id mcp9600_id[] = { { "mcp9600" }, {} };
 MODULE_DEVICE_TABLE(i2c, mcp9600_id);
 
 static const struct of_device_id mcp9600_of_match[] = {
 	{ .compatible = "microchip,mcp9600" },
-	{},
+	{}
 };
 MODULE_DEVICE_TABLE(of, mcp9600_of_match);
 
@@ -164,7 +163,7 @@ static struct i2c_driver mcp9600_driver = {
 		.name = "mcp9600",
 		.of_match_table = mcp9600_of_match,
 	},
-	.probe = mcp9600_probe,
+	.probe_new = mcp9600_probe,
 	.remove = mcp9600_remove,
 	.id_table = mcp9600_id
 };
