@@ -9,7 +9,7 @@ title: Microchip MCP9600 thermocouple EMF converter
 maintainers:
   - Andrew Hepp <andrew.hepp@ahepp.dev>
 
-description: |
+description:
   https://ww1.microchip.com/downloads/en/DeviceDoc/MCP960X-Data-Sheet-20005426.pdf
 
 properties:
@@ -28,8 +28,8 @@ properties:
     maxItems: 6
     items:
       enum:
-        - open
-        - short
+        - open-circuit
+        - short-circuit
         - alert1
         - alert2
         - alert3
@@ -42,8 +42,7 @@ properties:
       Use defines in dt-bindings/iio/temperature/thermocouple.h.
       Supported types are B, E, J, K, N, R, S, T.
 
-  vdd-supply:
-    description: Regulator that provides power to the sensor.
+  vdd-supply: true
 
 required:
   - compatible
@@ -53,19 +52,18 @@ unevaluatedProperties: false
 
 examples:
   - |
-    #include <dt-bindings/gpio/gpio.h>
     #include <dt-bindings/iio/temperature/thermocouple.h>
     #include <dt-bindings/interrupt-controller/irq.h>
     i2c {
         #address-cells = <1>;
         #size-cells = <0>;
 
-        mcp9600@60 {
+        temperature-sensor@60 {
             compatible = "microchip,mcp9600";
             reg = <0x60>;
             interrupt-parent = <&gpio>;
             interrupts = <25 IRQ_TYPE_EDGE_RISING>;
-            interrupt-names = "open";
+            interrupt-names = "open-circuit";
             thermocouple-type = <THERMOCOUPLE_TYPE_K>;
             vdd-supply = <&vdd>;
         };
