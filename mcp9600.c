@@ -52,13 +52,12 @@ static int mcp9600_read(struct mcp9600_data *data,
 	int ret;
 
 	mutex_lock(&data->read_lock);
-	ret = i2c_smbus_read_i2c_block_data(data->client, chan->address, 2,
-					    (u8 *)&buf);
+	ret = i2c_smbus_read_word_swapped(data->client, chan->address);
 	mutex_unlock(&data->read_lock);
 
 	if (ret < 0)
 		return ret;
-	*val = be16_to_cpu(buf);
+	*val = ret;
 
 	return 0;
 }
