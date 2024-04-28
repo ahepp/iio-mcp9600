@@ -37,23 +37,18 @@ static const struct iio_chan_spec mcp9600_channels[] = {
 		.info_mask_separate =
 			BIT(IIO_CHAN_INFO_RAW) | BIT(IIO_CHAN_INFO_SCALE),
 	},
-	IIO_CHAN_SOFT_TIMESTAMP(2),
 };
 
 struct mcp9600_data {
 	struct i2c_client *client;
-	struct mutex read_lock; /* lock to prevent concurrent reads */
 };
 
 static int mcp9600_read(struct mcp9600_data *data,
 			struct iio_chan_spec const *chan, int *val)
 {
-	__be16 buf;
 	int ret;
 
-	mutex_lock(&data->read_lock);
 	ret = i2c_smbus_read_word_swapped(data->client, chan->address);
-	mutex_unlock(&data->read_lock);
 
 	if (ret < 0)
 		return ret;
@@ -96,7 +91,7 @@ static int mcp9600_probe(struct i2c_client *client)
 
 	ret = i2c_smbus_read_byte_data(client, MCP9600_DEVICE_ID);
 	if (ret < 0)
-		return ret;
+		return dev_err_probe(&client->dev, ret, "Failed to read device ID\n");
 	if (ret != MCP9600_DEVICE_ID_MCP9600)
 		dev_warn(&client->dev, "Expected ID %x, got %x\n",
 				MCP9600_DEVICE_ID_MCP9600, ret);
@@ -107,7 +102,6 @@ static int mcp9600_probe(struct i2c_client *client)
 
 	data = iio_priv(indio_dev);
 	data->client = client;
-	mutex_init(&data->read_lock);
 
 	indio_dev->info = &mcp9600_info;
 	indio_dev->name = "mcp9600";
@@ -135,7 +129,7 @@ static struct i2c_driver mcp9600_driver = {
 		.name = "mcp9600",
 		.of_match_table = mcp9600_of_match,
 	},
-	.probe_new = mcp9600_probe,
+	.probe = mcp9600_probe,
 	.id_table = mcp9600_id
 };
 module_i2c_driver(mcp9600_driver);
